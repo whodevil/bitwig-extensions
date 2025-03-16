@@ -8,4 +8,22 @@ interface MidiHandler {
     fun noteInput(): Array<NoteData>
 }
 
-data class NoteData(val name: String, val mask: Array<String>)
+data class NoteData(val name: String, val mask: Array<String>) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as NoteData
+
+        if (name != other.name) return false
+        if (!mask.contentEquals(other.mask)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + mask.contentHashCode()
+        return result
+    }
+}

@@ -1,0 +1,408 @@
+Subject: [PATCH] Update gradle to kotlin api
+---
+Index: buildSrc/build.gradle.kts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/buildSrc/build.gradle.kts b/buildSrc/build.gradle.kts
+new file mode 100644
+--- /dev/null	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
++++ b/buildSrc/build.gradle.kts	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
+@@ -0,0 +1,4 @@
++plugins {
++    `kotlin-dsl`
++}
++
+Index: buildSrc/settings.gradle.kts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/buildSrc/settings.gradle.kts b/buildSrc/settings.gradle.kts
+new file mode 100644
+--- /dev/null	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
++++ b/buildSrc/settings.gradle.kts	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
+@@ -0,0 +1,5 @@
++dependencyResolutionManagement {
++    repositories {
++        mavenCentral()
++    }
++}
+\ No newline at end of file
+Index: buildSrc/src/main/kotlin/bitwig-extensions.conventions.gradle.kts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/buildSrc/src/main/kotlin/bitwig-extensions.conventions.gradle.kts b/buildSrc/src/main/kotlin/bitwig-extensions.conventions.gradle.kts
+new file mode 100644
+--- /dev/null	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
++++ b/buildSrc/src/main/kotlin/bitwig-extensions.conventions.gradle.kts	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
+@@ -0,0 +1,22 @@
++apply(plugin = "java")
++
++tasks {
++
++    register<Copy>("transit") {
++        dependsOn("jar")
++        from(tasks.getByName("jar"))
++        from(configurations.getAt("runtimeClasspath"))
++        into("${project.layout.buildDirectory.get()}/transit")
++    }
++
++    register<Zip>("package") {
++        from(tasks.getByName("transit"))
++        destinationDirectory = layout.buildDirectory.dir("archives")
++    }
++
++    register<Copy>("install") {
++        from(tasks.getByName("package"))
++        into(System.getenv("BITWIG_EXTENSIONS_LOCATION"))
++        rename {"${project.name}.bwextension"}
++    }
++}
+Index: common/common.gradle.kts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/common.gradle.kts b/common/common.gradle.kts
+new file mode 100644
+--- /dev/null	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
++++ b/common/common.gradle.kts	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
+@@ -0,0 +1,8 @@
++plugins {
++    id("info.offthecob.Library")
++}
++
++dependencies {
++    api("com.bitwig:extension-api:20")
++    api("com.google.inject:guice:4.1.0")
++}
+Index: common/gradle.lockfile
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/gradle.lockfile b/common/gradle.lockfile
+new file mode 100644
+--- /dev/null	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
++++ b/common/gradle.lockfile	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
+@@ -0,0 +1,12 @@
++# This is a Gradle generated file for dependency locking.
++# Manual edits can break the build and are not advised.
++# This file is expected to be part of source control.
++aopalliance:aopalliance:1.0=compileClasspath,runtimeClasspath
++com.bitwig:extension-api:20=compileClasspath,runtimeClasspath
++com.google.code.findbugs:jsr305:3.0.2=runtimeClasspath
++com.google.guava:guava:19.0=compileClasspath,runtimeClasspath
++com.google.inject:guice:4.1.0=compileClasspath,runtimeClasspath
++javax.inject:javax.inject:1=compileClasspath,runtimeClasspath
++org.jetbrains.kotlin:kotlin-stdlib:2.0.0=compileClasspath,runtimeClasspath
++org.jetbrains:annotations:13.0=compileClasspath,runtimeClasspath
++empty=annotationProcessor
+Index: common/src/main/kotlin/offthecob/common/CommonExtensionDefinition.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/kotlin/offthecob/common/CommonExtensionDefinition.kt b/common/src/main/kotlin/offthecob/common/CommonExtensionDefinition.kt
+--- a/common/src/main/kotlin/offthecob/common/CommonExtensionDefinition.kt	(revision a410c7d749da4122f6f4d53d006979661f3175c5)
++++ b/common/src/main/kotlin/offthecob/common/CommonExtensionDefinition.kt	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
+@@ -37,7 +37,7 @@
+     }
+ 
+     override fun getRequiredAPIVersion(): Int {
+-        return 9
++        return 20
+     }
+ 
+     override fun getNumMidiInPorts(): Int {
+Index: common/src/main/kotlin/offthecob/common/MidiHandler.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/kotlin/offthecob/common/MidiHandler.kt b/common/src/main/kotlin/offthecob/common/MidiHandler.kt
+--- a/common/src/main/kotlin/offthecob/common/MidiHandler.kt	(revision a410c7d749da4122f6f4d53d006979661f3175c5)
++++ b/common/src/main/kotlin/offthecob/common/MidiHandler.kt	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
+@@ -8,4 +8,22 @@
+     fun noteInput(): Array<NoteData>
+ }
+ 
+-data class NoteData(val name: String, val mask: Array<String>)
+\ No newline at end of file
++data class NoteData(val name: String, val mask: Array<String>) {
++    override fun equals(other: Any?): Boolean {
++        if (this === other) return true
++        if (javaClass != other?.javaClass) return false
++
++        other as NoteData
++
++        if (name != other.name) return false
++        if (!mask.contentEquals(other.mask)) return false
++
++        return true
++    }
++
++    override fun hashCode(): Int {
++        var result = name.hashCode()
++        result = 31 * result + mask.contentHashCode()
++        return result
++    }
++}
+\ No newline at end of file
+Index: gradle/wrapper/gradle-wrapper.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>ISO-8859-1
+===================================================================
+diff --git a/gradle/wrapper/gradle-wrapper.properties b/gradle/wrapper/gradle-wrapper.properties
+--- a/gradle/wrapper/gradle-wrapper.properties	(revision a410c7d749da4122f6f4d53d006979661f3175c5)
++++ b/gradle/wrapper/gradle-wrapper.properties	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
+@@ -1,6 +1,5 @@
+-#Sat Oct 05 15:00:50 PDT 2019
+-distributionUrl=https\://services.gradle.org/distributions/gradle-5.6.2-all.zip
+ distributionBase=GRADLE_USER_HOME
+ distributionPath=wrapper/dists
+-zipStorePath=wrapper/dists
++distributionUrl=https\://services.gradle.org/distributions/gradle-8.13-all.zip
+ zipStoreBase=GRADLE_USER_HOME
++zipStorePath=wrapper/dists
+Index: mpd/gradle.lockfile
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/mpd/gradle.lockfile b/mpd/gradle.lockfile
+new file mode 100644
+--- /dev/null	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
++++ b/mpd/gradle.lockfile	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
+@@ -0,0 +1,12 @@
++# This is a Gradle generated file for dependency locking.
++# Manual edits can break the build and are not advised.
++# This file is expected to be part of source control.
++aopalliance:aopalliance:1.0=compileClasspath,runtimeClasspath
++com.bitwig:extension-api:20=compileClasspath,runtimeClasspath
++com.google.code.findbugs:jsr305:3.0.2=runtimeClasspath
++com.google.guava:guava:19.0=compileClasspath,runtimeClasspath
++com.google.inject:guice:4.1.0=compileClasspath,runtimeClasspath
++javax.inject:javax.inject:1=compileClasspath,runtimeClasspath
++org.jetbrains.kotlin:kotlin-stdlib:2.0.0=compileClasspath,runtimeClasspath
++org.jetbrains:annotations:13.0=compileClasspath,runtimeClasspath
++empty=annotationProcessor
+Index: mpd/mpd.gradle.kts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/mpd/mpd.gradle.kts b/mpd/mpd.gradle.kts
+new file mode 100644
+--- /dev/null	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
++++ b/mpd/mpd.gradle.kts	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
+@@ -0,0 +1,8 @@
++plugins {
++    id("info.offthecob.Base")
++    id("bitwig-extensions.conventions")
++}
++
++dependencies {
++    implementation(project(":common"))
++}
+\ No newline at end of file
+Index: settings-gradle.lockfile
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/settings-gradle.lockfile b/settings-gradle.lockfile
+new file mode 100644
+--- /dev/null	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
++++ b/settings-gradle.lockfile	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
+@@ -0,0 +1,5 @@
++# This is a Gradle generated file for dependency locking.
++# Manual edits can break the build and are not advised.
++# This file is expected to be part of source control.
++info.offthecob.platform:catalog:1.0.17=incomingCatalogForLibs0
++empty=
+Index: settings.gradle.kts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/settings.gradle.kts b/settings.gradle.kts
+new file mode 100644
+--- /dev/null	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
++++ b/settings.gradle.kts	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
+@@ -0,0 +1,21 @@
++plugins {
++    id("info.offthecob.Settings") version "1.0.17"
++}
++
++rootProject.name = "bitwig-extensions"
++
++dependencyResolutionManagement {
++    repositories {
++        mavenCentral()
++        maven {
++            url = uri("https://maven.bitwig.com")
++        }
++    }
++
++    versionCatalogs {
++        create("libs") {
++            from("info.offthecob.platform:catalog:1.0.17")
++            library("offthecob-platform", "info.offthecob.platform:bom:1.0.17")
++        }
++    }
++}
+\ No newline at end of file
+Index: um-one/gradle.lockfile
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/um-one/gradle.lockfile b/um-one/gradle.lockfile
+new file mode 100644
+--- /dev/null	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
++++ b/um-one/gradle.lockfile	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
+@@ -0,0 +1,12 @@
++# This is a Gradle generated file for dependency locking.
++# Manual edits can break the build and are not advised.
++# This file is expected to be part of source control.
++aopalliance:aopalliance:1.0=compileClasspath,runtimeClasspath
++com.bitwig:extension-api:20=compileClasspath,runtimeClasspath
++com.google.code.findbugs:jsr305:3.0.2=runtimeClasspath
++com.google.guava:guava:19.0=compileClasspath,runtimeClasspath
++com.google.inject:guice:4.1.0=compileClasspath,runtimeClasspath
++javax.inject:javax.inject:1=compileClasspath,runtimeClasspath
++org.jetbrains.kotlin:kotlin-stdlib:2.0.0=compileClasspath,runtimeClasspath
++org.jetbrains:annotations:13.0=compileClasspath,runtimeClasspath
++empty=annotationProcessor
+Index: um-one/um-one.gradle.kts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/um-one/um-one.gradle.kts b/um-one/um-one.gradle.kts
+new file mode 100644
+--- /dev/null	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
++++ b/um-one/um-one.gradle.kts	(revision 10c2ba99118058d95fdf0fbb220340050ac30a56)
+@@ -0,0 +1,8 @@
++plugins {
++    id("info.offthecob.Base")
++    id("bitwig-extensions.conventions")
++}
++
++dependencies {
++    implementation(project(":common"))
++}
+\ No newline at end of file
+Index: base-extension.gradle
+===================================================================
+diff --git a/base-extension.gradle b/base-extension.gradle
+deleted file mode 100644
+--- a/base-extension.gradle	(revision a410c7d749da4122f6f4d53d006979661f3175c5)
++++ /dev/null	(revision a410c7d749da4122f6f4d53d006979661f3175c5)
+@@ -1,15 +0,0 @@
+-dependencies {
+-    compile project(":common")
+-}
+-
+-jar {
+-    from {
+-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+-    }
+-}
+-
+-task install(type: Copy) {
+-    from jar
+-    into "${System.env.BITWIG_EXTENSIONS_LOCATION}"
+-    rename {"${project.name}.bwextension"}
+-}
+Index: build.gradle
+===================================================================
+diff --git a/build.gradle b/build.gradle
+deleted file mode 100644
+--- a/build.gradle	(revision a410c7d749da4122f6f4d53d006979661f3175c5)
++++ /dev/null	(revision a410c7d749da4122f6f4d53d006979661f3175c5)
+@@ -1,33 +0,0 @@
+-allprojects {
+-    repositories {
+-        mavenCentral()
+-        jcenter()
+-        maven {
+-            url 'https://maven.bitwig.com'
+-        }
+-    }
+-}
+-
+-subprojects {
+-    apply plugin: "java"
+-    apply plugin: "org.jetbrains.kotlin.jvm"
+-
+-    compileJava {
+-        sourceCompatibility = 1.8
+-        targetCompatibility = 1.8
+-    }
+-}
+-
+-buildscript {
+-    repositories {
+-        mavenCentral()
+-        jcenter()
+-        maven {
+-            url 'https://maven.bitwig.com'
+-        }
+-    }
+-
+-    dependencies {
+-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.71"
+-    }
+-}
+Index: common/common.gradle
+===================================================================
+diff --git a/common/common.gradle b/common/common.gradle
+deleted file mode 100644
+--- a/common/common.gradle	(revision a410c7d749da4122f6f4d53d006979661f3175c5)
++++ /dev/null	(revision a410c7d749da4122f6f4d53d006979661f3175c5)
+@@ -1,7 +0,0 @@
+-dependencies {
+-    compile 'org.jetbrains.kotlin:kotlin-stdlib'
+-    compile 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+-    compile 'org.jetbrains.kotlin:kotlin-reflect'
+-    compile 'com.bitwig:extension-api:9+'
+-    compile 'com.google.inject:guice:4.1.0'
+-}
+Index: mpd/mpd.gradle
+===================================================================
+diff --git a/mpd/mpd.gradle b/mpd/mpd.gradle
+deleted file mode 100644
+--- a/mpd/mpd.gradle	(revision a410c7d749da4122f6f4d53d006979661f3175c5)
++++ /dev/null	(revision a410c7d749da4122f6f4d53d006979661f3175c5)
+@@ -1,1 +0,0 @@
+-apply from: "../base-extension.gradle"
+Index: settings.gradle
+===================================================================
+diff --git a/settings.gradle b/settings.gradle
+deleted file mode 100644
+--- a/settings.gradle	(revision a410c7d749da4122f6f4d53d006979661f3175c5)
++++ /dev/null	(revision a410c7d749da4122f6f4d53d006979661f3175c5)
+@@ -1,6 +0,0 @@
+-include 'common', 'mpd', 'um-one'
+-
+-rootProject.children.each { project ->
+-    project.buildFileName = "${project.name}.gradle"
+-    assert project.buildFile.isFile()
+-}
+Index: um-one/um-one.gradle
+===================================================================
+diff --git a/um-one/um-one.gradle b/um-one/um-one.gradle
+deleted file mode 100644
+--- a/um-one/um-one.gradle	(revision a410c7d749da4122f6f4d53d006979661f3175c5)
++++ /dev/null	(revision a410c7d749da4122f6f4d53d006979661f3175c5)
+@@ -1,1 +0,0 @@
+-apply from: "../base-extension.gradle"
+diff --git a/build.gradle.kts b/build.gradle.kts
+new file mode 100644
