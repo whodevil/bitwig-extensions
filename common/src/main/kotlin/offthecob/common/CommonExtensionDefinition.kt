@@ -3,15 +3,16 @@ package offthecob.common
 import com.bitwig.extension.api.PlatformType
 import com.bitwig.extension.controller.AutoDetectionMidiPortNamesList
 import com.bitwig.extension.controller.ControllerExtensionDefinition
-import java.util.*
+import java.util.UUID
 
 data class HardwareDefinition(val vendor: String, val model: String, val friendlyName: String)
 
 abstract class CommonExtensionDefinition(
-        private val extensionName: String,
-        private val extensionAuthor: String,
-        private val extensionUuid: UUID,
-        val hardwareDefinition: HardwareDefinition) : ControllerExtensionDefinition() {
+    private val extensionName: String,
+    private val extensionAuthor: String,
+    private val extensionUuid: UUID,
+    val hardwareDefinition: HardwareDefinition,
+) : ControllerExtensionDefinition() {
     override fun getName(): String {
         return extensionName
     }
@@ -48,7 +49,10 @@ abstract class CommonExtensionDefinition(
         return 1
     }
 
-    override fun listAutoDetectionMidiPortNames(list: AutoDetectionMidiPortNamesList, platformType: PlatformType) {
+    override fun listAutoDetectionMidiPortNames(
+        list: AutoDetectionMidiPortNamesList,
+        platformType: PlatformType,
+    ) {
         when (platformType) {
             PlatformType.WINDOWS -> list.add(arrayOf(hardwareDefinition.friendlyName), arrayOf(hardwareDefinition.friendlyName))
             PlatformType.MAC -> {
