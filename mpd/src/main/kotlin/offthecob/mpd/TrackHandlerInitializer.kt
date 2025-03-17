@@ -1,6 +1,11 @@
 package offthecob.mpd
 
-import com.bitwig.extension.controller.api.*
+import com.bitwig.extension.controller.api.ClipLauncherSlotBank
+import com.bitwig.extension.controller.api.CursorRemoteControlsPage
+import com.bitwig.extension.controller.api.CursorTrack
+import com.bitwig.extension.controller.api.PinnableCursorDevice
+import com.bitwig.extension.controller.api.Track
+import com.bitwig.extension.controller.api.TrackBank
 
 fun initRemoteControlsPage(knobRemoteControlPage: CursorRemoteControlsPage) {
     var i = 0
@@ -10,7 +15,6 @@ fun initRemoteControlsPage(knobRemoteControlPage: CursorRemoteControlsPage) {
         parameter.setIndication(true)
         i++
     }
-
 }
 
 fun initCursorTrack(cursorTrack: CursorTrack) {

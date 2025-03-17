@@ -1,7 +1,0 @@
-dependencies {
-    compile 'org.jetbrains.kotlin:kotlin-stdlib'
-    compile 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
-    compile 'org.jetbrains.kotlin:kotlin-reflect'
-    compile 'com.bitwig:extension-api:9+'
-    compile 'com.google.inject:guice:4.1.0'
-}
