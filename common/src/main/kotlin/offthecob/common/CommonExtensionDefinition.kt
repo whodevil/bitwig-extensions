@@ -5,7 +5,15 @@ import com.bitwig.extension.controller.AutoDetectionMidiPortNamesList
 import com.bitwig.extension.controller.ControllerExtensionDefinition
 import java.util.UUID
 
-data class HardwareDefinition(val vendor: String, val model: String, val friendlyName: String)
+data class HardwareDefinition(
+    val vendor: String,
+    val model: String,
+    // The name of the device as shown in the bitwig UI
+    // For example 'MIDIIN3 (Midihub MH-2GX5CQK)
+    val friendlyName: String,
+    val friendlyNameOut: String = friendlyName,
+    val midiIn: Int = 1,
+    val midiOut: Int = 1)
 
 abstract class CommonExtensionDefinition(
     private val extensionName: String,
@@ -42,11 +50,11 @@ abstract class CommonExtensionDefinition(
     }
 
     override fun getNumMidiInPorts(): Int {
-        return 1
+        return hardwareDefinition.midiIn
     }
 
     override fun getNumMidiOutPorts(): Int {
-        return 1
+        return hardwareDefinition.midiOut
     }
 
     override fun listAutoDetectionMidiPortNames(
@@ -54,7 +62,7 @@ abstract class CommonExtensionDefinition(
         platformType: PlatformType,
     ) {
         when (platformType) {
-            PlatformType.WINDOWS -> list.add(arrayOf(hardwareDefinition.friendlyName), arrayOf(hardwareDefinition.friendlyName))
+            PlatformType.WINDOWS -> list.add(arrayOf(hardwareDefinition.friendlyName), arrayOf(hardwareDefinition.friendlyNameOut))
             PlatformType.MAC -> {
                 // TODO: Set the correct names of the ports for auto detection on Windows platform here
                 // and uncomment this when port names are correct.

@@ -1,5 +1,7 @@
 plugins {
-    id("info.offthecob.Library")
+    id("bitwig-extensions.conventions")
+    kotlin("jvm")
+    `java-library`
 }
 
 dependencies {

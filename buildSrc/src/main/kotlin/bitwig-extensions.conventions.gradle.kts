@@ -1,21 +1,22 @@
-apply(plugin = "java")
+plugins {
+    java
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}
 
 tasks {
-
-    register<Copy>("transit") {
-        dependsOn("jar")
-        from(tasks.getByName("jar"))
-        from(configurations.getAt("runtimeClasspath"))
-        into("${project.layout.buildDirectory.get()}/transit")
-    }
-
-    register<Zip>("package") {
-        from(tasks.getByName("transit"))
-        destinationDirectory = layout.buildDirectory.dir("archives")
+    named<Jar>("jar") {
+        from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
     }
 
     register<Copy>("install") {
-        from(tasks.getByName("package"))
+        group = "build"
+        dependsOn("jar")
+        from(tasks.getByName("jar"))
         into(System.getenv("BITWIG_EXTENSIONS_LOCATION"))
         rename {"${project.name}.bwextension"}
     }
