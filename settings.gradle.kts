@@ -8,5 +8,3 @@ dependencyResolutionManagement {
         }
     }
 }
-
-include("common", "mpd", "um-one", "pedalboard")
