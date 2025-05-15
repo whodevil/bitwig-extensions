@@ -8,9 +8,10 @@ Experiments abound.
 
 ### Developing
 Dependencies
-- Java 1.8 or newer
+- Java 21 or newer
 - Set the environment variable `BITWIG_EXTENSIONS_LOCATION` to the location bitwig expects the
 extensions to be installed. On Windows, by default, this is `~/Documents/Bitwig\ Studio/Extensions`.
 
-To deploy the extension to Bitwig run the following command:
-- `./gradlew <sub-project>:install` for example `./gradlew um-one:install`
+All the extensions ship in a single package, so hitting the install target will put the package where it needs to go
+to be picked up by Bitwig.
+- `./gradlew install`
