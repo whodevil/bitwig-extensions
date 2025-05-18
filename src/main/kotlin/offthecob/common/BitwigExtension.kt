@@ -10,15 +10,17 @@ abstract class BitwigExtension(val definition: CommonExtensionDefinition, host: 
 
     override fun init() {
         val midiHandler = fetchHandler(host)
-        host.getMidiInPort(0).setMidiCallback(
-            object : ShortMidiMessageReceivedCallback {
-                override fun midiReceived(msg: ShortMidiMessage?) {
-                    if (msg != null) {
-                        midiHandler.handleMessage(msg)
+        (0..definition.numMidiInPorts - 1).forEach {
+            host.getMidiInPort(it).setMidiCallback(
+                object : ShortMidiMessageReceivedCallback {
+                    override fun midiReceived(msg: ShortMidiMessage?) {
+                        if (msg != null) {
+                            midiHandler.handleMessage(msg)
+                        }
                     }
-                }
-            },
-        )
+                },
+            )
+        }
 
         host.getMidiInPort(0).setSysexCallback { data: String -> midiHandler.handleSysexMessage(data) }
         val noteInput = midiHandler.noteInput()
