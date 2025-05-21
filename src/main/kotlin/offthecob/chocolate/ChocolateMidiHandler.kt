@@ -6,8 +6,15 @@ import com.bitwig.extension.controller.api.ControllerHost
 import com.bitwig.extension.controller.api.SceneBank
 import com.bitwig.extension.controller.api.TrackBank
 import com.bitwig.extension.controller.api.Transport
+import offthecob.chocolate.ChocolateMode.CLIP
+import offthecob.chocolate.ChocolateMode.SCENE
 import offthecob.common.MidiHandler
 import offthecob.common.NoteData
+
+enum class ChocolateMode() {
+    SCENE,
+    CLIP,
+}
 
 class ChocolateMidiHandler(
     private val host: ControllerHost,
@@ -16,19 +23,139 @@ class ChocolateMidiHandler(
     private val trackBank: TrackBank,
     private val clipLauncherSlotBank: ClipLauncherSlotBank
 ) : MidiHandler {
-    var slot = 0
+
+    var mode: ChocolateMode = CLIP
 
     override fun handleMessage(msg: ShortMidiMessage) {
-        host.println("pc: ${msg.isProgramChange}, ${msg}")
-        when(msg.data1) {
+        host.println("pc: ${msg.isProgramChange}, $msg")
+        when (msg.data1) {
+            11 -> toggleMode()
+
+            40 -> volumeUp()
+            30 -> volumeDown()
+
+            15 -> trackArm()
+            16 -> trackSolo()
+            17 -> trackMute()
+            18 -> deactivate()
+
+            10 -> insertDevice()
+            8 -> startHardStop()
+            7 -> recordCLip()
+            19 -> deleteClip()
+
             9 -> scrollClipUp()
             6 -> scrollClipForward()
             5 -> scrollClipDown()
             4 -> scrollClipBack()
-            3 -> handleStopStart()
-            2 -> scrollSceneForward()
-            1 -> playScene()
-            0 -> scrollSceneBack()
+
+            // foo
+            3 -> d()
+            2 -> c()
+            1 -> b()
+            0 -> a()
+        }
+    }
+
+    private fun d() {
+        host.println("d")
+        when(mode) {
+           CLIP -> startStop()
+           SCENE -> startHardStop()
+        }
+    }
+
+    private fun c() {
+        host.println("c")
+        when(mode) {
+           CLIP -> recordCLip()
+           SCENE -> playScene()
+        }
+    }
+
+    private fun b() {
+        host.println("b")
+        when(mode) {
+            CLIP -> triggerNextScene()
+            SCENE -> scrollSceneForward()
+        }
+    }
+
+    private fun a() {
+        host.println("a")
+        when(mode) {
+            CLIP -> triggerPreviousScene()
+            SCENE -> scrollSceneBack()
+        }
+    }
+
+    private fun triggerPreviousScene() {
+        scrollSceneBack()
+        playScene()
+    }
+
+    private fun triggerNextScene() {
+        scrollSceneForward()
+        playScene()
+    }
+
+    private fun toggleMode() {
+        if(mode == CLIP) {
+            host.showPopupNotification("Scene Mode")
+            mode = SCENE
+        } else {
+            host.showPopupNotification("Clip Mode")
+            mode = CLIP
+        }
+    }
+
+    private fun deleteClip() {
+        host.println("delete clip")
+        clipLauncherSlotBank.getItemAt(0).deleteObject()
+    }
+
+    private fun insertDevice() {
+        host.println("insert device")
+        trackBank.getItemAt(0).endOfDeviceChainInsertionPoint().browse()
+    }
+
+    private fun volumeDown() {
+        host.println("volume down")
+        trackBank.getItemAt(0).volume().inc(-.03)
+    }
+
+    private fun volumeUp() {
+        host.println("volume up")
+        trackBank.getItemAt(0).volume().inc(.03)
+    }
+
+    private fun deactivate() {
+        host.println("toggle active")
+        trackBank.getItemAt(0).isActivated.toggle()
+    }
+
+    private fun trackMute() {
+        host.println("track mute")
+        trackBank.getItemAt(0).mute().toggle()
+    }
+
+    private fun trackSolo() {
+        host.println("track solo")
+        trackBank.getItemAt(0).solo().toggle()
+    }
+
+    private fun trackArm() {
+        host.println("track arm")
+        trackBank.getItemAt(0).arm().toggle()
+    }
+
+    private fun recordCLip() {
+        host.println("record clip")
+        val clip = clipLauncherSlotBank.getItemAt(0)
+        if (clip.isRecording.get()) {
+            clip.launch()
+        } else {
+            clip.record()
         }
     }
 
@@ -68,8 +195,16 @@ class ChocolateMidiHandler(
         sceneBank.scrollForwards()
     }
 
-    private fun handleStopStart() {
-        if(transport.isPlaying.get()) {
+    private fun startStop() {
+        if (transport.isPlaying.get()) {
+            transport.stop()
+        } else {
+            transport.play()
+        }
+    }
+
+    private fun startHardStop() {
+        if (transport.isPlaying.get()) {
             transport.stop()
             sceneBank.stop()
         } else {

@@ -12,7 +12,8 @@ java {
 
 tasks {
     named<Jar>("jar") {
-        exclude("**/LICENSE.txt")
+        // TODO figure out how to do the right thing here and rename the license files so that they are included in the extension
+        exclude("**/LICENSE*")
         from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
     }
 
@@ -29,6 +30,7 @@ tasks {
 }
 
 dependencies {
-    api("com.bitwig:extension-api:20")
-    api("com.google.inject:guice:7.0.0")
+    implementation("com.bitwig:extension-api:20")
+    implementation("com.google.inject:guice:7.0.0")
+    implementation("org.hid4java:hid4java:0.8.0")
 }
