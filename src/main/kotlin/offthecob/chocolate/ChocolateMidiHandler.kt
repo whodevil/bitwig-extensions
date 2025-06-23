@@ -8,12 +8,18 @@ import com.bitwig.extension.controller.api.TrackBank
 import com.bitwig.extension.controller.api.Transport
 import offthecob.chocolate.ChocolateMode.CLIP
 import offthecob.chocolate.ChocolateMode.SCENE
+import offthecob.chocolate.EncoderMode.VOLUME
 import offthecob.common.MidiHandler
 import offthecob.common.NoteData
 
 enum class ChocolateMode() {
     SCENE,
     CLIP,
+}
+
+enum class EncoderMode() {
+    VOLUME,
+    SEND
 }
 
 class ChocolateMidiHandler(
@@ -25,14 +31,18 @@ class ChocolateMidiHandler(
 ) : MidiHandler {
 
     var mode: ChocolateMode = CLIP
+    var encoderMode: EncoderMode = VOLUME
 
     override fun handleMessage(msg: ShortMidiMessage) {
         host.println("pc: ${msg.isProgramChange}, $msg")
         when (msg.data1) {
             11 -> toggleMode()
+            25 -> toggleEncoderMode()
 
-            40 -> volumeUp()
-            30 -> volumeDown()
+            40 -> encoderClockwise()
+            30 -> encoderCounterClockwise()
+            23 -> sendScrollUp()
+            20 -> sendScrollDown()
 
             15 -> trackArm()
             16 -> trackSolo()
@@ -42,7 +52,7 @@ class ChocolateMidiHandler(
             10 -> insertDevice()
             8 -> startHardStop()
             7 -> recordCLip()
-            19 -> deleteClip()
+            21 -> deleteClip()
 
             9 -> scrollClipUp()
             6 -> scrollClipForward()
@@ -54,6 +64,30 @@ class ChocolateMidiHandler(
             2 -> c()
             1 -> b()
             0 -> a()
+        }
+    }
+
+    private fun sendScrollDown() {
+        trackBank.getItemAt(0).sendBank().scrollForwards()
+    }
+
+    private fun sendScrollUp() {
+        trackBank.getItemAt(0).sendBank().scrollBackwards()
+    }
+
+    private fun encoderCounterClockwise() {
+        if(encoderMode == VOLUME) {
+            volumeDown()
+        } else {
+            trackBank.getItemAt(0).sendBank().getItemAt(0).inc(-.03)
+        }
+    }
+
+    private fun encoderClockwise() {
+        if(encoderMode == VOLUME) {
+            volumeUp()
+        } else {
+            trackBank.getItemAt(0).sendBank().getItemAt(0).inc(.03)
         }
     }
 
@@ -106,6 +140,16 @@ class ChocolateMidiHandler(
         } else {
             host.showPopupNotification("Clip Mode")
             mode = CLIP
+        }
+    }
+
+    private fun toggleEncoderMode() {
+        if(encoderMode == VOLUME) {
+            host.showPopupNotification("Send Mode")
+            encoderMode = EncoderMode.SEND
+        } else {
+            host.showPopupNotification("Volume Mode")
+            encoderMode = VOLUME
         }
     }
 
