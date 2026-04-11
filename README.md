@@ -32,8 +32,8 @@ to the `data1` byte, so no offset translation is needed.
     │  PC 15    │  │  PC 16    │  │  PC 17    │  │  PC 18    │
     └───────────┘  └───────────┘  └───────────┘  └───────────┘
     ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐
-    │  MODE     │  │           │  │           │  │           │
-    │  TOGGLE   │  │     —     │  │     —     │  │     —     │  row 1
+    │  FOOTSW   │  │  KEYPAD   │  │           │  │  CANCEL   │
+    │  MODE     │  │  MODE     │  │     —     │  │ (browser) │  row 1
     │  PC 11    │  │  PC 12    │  │  PC 13    │  │  PC 14    │
     └───────────┘  └───────────┘  └───────────┘  └───────────┘
     ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐
@@ -87,23 +87,37 @@ to the `data1` byte, so no offset translation is needed.
 
 #### Modes
 
-Two independent mode axes control context-sensitive behaviour:
+Three independent mode axes control context-sensitive behaviour:
 
 | Mode axis | States | Toggle |
 |---|---|---|
-| **ChocolateMode** | `CLIP` (default) / `SCENE` | PC 11 (Super16v2 Row 1 / Col 0) |
+| **FootswitchMode** | `CLIP` (default) / `SCENE` | PC 11 (Super16v2 Row 1 / Col 0) |
 | **EncoderMode** | `VOLUME` (default) / `SEND` | PC 25 (Super16v2 Fn + Row 1 / Col 0) |
+| **KeypadMode** | `DEFAULT` (default) / `DEVICE` | PC 12 (Super16v2 Row 1 / Col 1) |
 
 The active mode name is shown as a Bitwig popup notification on each toggle.
+
+##### Device Mode
+
+When keypad mode is set to `DEVICE`:
+- The device/edit panel opens automatically
+- Left/right keys (PC 4/6) move a cursor through the device chain's insertion points
+- Up/down keys (PC 9/5) continue to navigate tracks
+- Browse (PC 10) opens the device browser popup at the current insertion point
+- While the browser is open, up/down scroll through available devices
+- Browse (PC 10) commits the selection; PC 14 cancels
+- If the browser is closed externally (via Bitwig UI), the extension returns to navigation state
 
 #### Super16v2 — Layer 0 (Base)
 
 | | Col 0 | Col 1 | Col 2 | Col 3 |
 |---|---|---|---|---|
 | **Row 0** | Arm (PC 15) | Solo (PC 16) | Mute (PC 17) | Activate (PC 18) |
-| **Row 1** | **Mode toggle** (PC 11) | — (PC 12) | — (PC 13) | — (PC 14) |
-| **Row 2** | Record clip (PC 7) | Hard stop (PC 8) | Track ↑ (PC 9) | Browse devices (PC 10) |
+| **Row 1** | **Footswitch mode toggle** (PC 11) | **Keypad mode toggle** (PC 12) | — (PC 13) | **Cancel browser** (PC 14) |
+| **Row 2** | Record clip (PC 7) | Hard stop (PC 8) | Track ↑ (PC 9) | Browse devices¹ (PC 10) |
 | **Row 3** | `[Fn hold]` | Clip slot ← (PC 4) | Track ↓ (PC 5) | Clip slot → (PC 6) |
+
+> ¹ **Browse devices** is only active in Device keypad mode. In Default keypad mode, PC 10 is a no-op.
 
 #### Super16v2 — Layer 1 (Fn held, bottom-left)
 
