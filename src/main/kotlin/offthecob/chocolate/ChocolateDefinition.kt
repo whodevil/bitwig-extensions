@@ -21,8 +21,9 @@ class ChocolateDefinition : CommonExtensionDefinition(
                 host.println("boom!")
                 val transport = host.transport()
                 val sceneBank = host.sceneBank()
+                val cursorTrack = host.createCursorTrack("chocolate", "Cursor Track", 0, 1, true)
                 val trackBank = host.createTrackBank(1, 1, 1)
-                val clipLauncherSlotBank = trackBank.init(host)
+                val clipLauncherSlotBank = trackBank.init(cursorTrack)
                 return ChocolateMidiHandler(
                     host,
                     transport,
@@ -54,8 +55,7 @@ fun Track.markInterested() {
     isActivated.markInterested()
 }
 
-fun TrackBank.init(host: ControllerHost): ClipLauncherSlotBank {
-    val cursorTrack = host.createCursorTrack("chocolate", "Cursor Track", 0, 1, true)
+fun TrackBank.init(cursorTrack: CursorTrack): ClipLauncherSlotBank {
     followCursorTrack(cursorTrack)
     setShouldShowClipLauncherFeedback(true)
     val track = getItemAt(0)
