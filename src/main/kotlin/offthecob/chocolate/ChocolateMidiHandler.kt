@@ -46,10 +46,10 @@ class ChocolateMidiHandler(
     private val popupBrowser: PopupBrowser
 ) : MidiHandler {
 
-    var footswitchMode: FootswitchMode = CLIP
-    var encoderMode: EncoderMode = VOLUME
-    var keypadMode: KeypadMode = KeypadMode.DEFAULT
-    var deviceState: DeviceState = DeviceState.NAVIGATION
+    private var footswitchMode: FootswitchMode = CLIP
+    private var encoderMode: EncoderMode = VOLUME
+    private var keypadMode: KeypadMode = KeypadMode.DEFAULT
+    private var deviceState: DeviceState = DeviceState.NAVIGATION
 
     init {
         popupBrowser.exists().addValueObserver { exists ->
@@ -76,6 +76,10 @@ class ChocolateMidiHandler(
             17 -> trackMute()
             18 -> deactivate()
 
+            8 -> startHardStop()
+            7 -> recordCLip()
+            21 -> deleteClip()
+
             4 -> when (keypadMode) {
                 KeypadMode.DEFAULT -> scrollClipBack()
                 KeypadMode.DEVICE -> when (deviceState) {
@@ -97,9 +101,6 @@ class ChocolateMidiHandler(
                     DeviceState.BROWSING -> {} // no-op
                 }
             }
-            8 -> startHardStop()
-            7 -> recordCLip()
-            21 -> deleteClip()
             9 -> when (keypadMode) {
                 KeypadMode.DEFAULT -> scrollClipUp()
                 KeypadMode.DEVICE -> when (deviceState) {
@@ -122,7 +123,6 @@ class ChocolateMidiHandler(
                 }
             }
 
-            // foo
             3 -> d()
             2 -> c()
             1 -> b()
