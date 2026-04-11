@@ -259,12 +259,19 @@ class ChocolateMidiHandler(
     }
 
     private fun toggleEncoderMode() {
-        if(encoderMode == VOLUME) {
-            host.showPopupNotification("Send Mode")
-            encoderMode = EncoderMode.SEND
-        } else {
-            host.showPopupNotification("Volume Mode")
-            encoderMode = VOLUME
+        when (encoderMode) {
+            EncoderMode.VOLUME -> {
+                host.showPopupNotification("Send Mode")
+                encoderMode = EncoderMode.SEND
+            }
+            EncoderMode.SEND -> {
+                host.showPopupNotification("Transport Mode")
+                encoderMode = EncoderMode.TRANSPORT
+            }
+            EncoderMode.TRANSPORT -> {
+                host.showPopupNotification("Volume Mode")
+                encoderMode = EncoderMode.VOLUME
+            }
         }
     }
 
