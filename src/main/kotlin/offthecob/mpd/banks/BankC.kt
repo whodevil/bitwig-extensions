@@ -2,8 +2,8 @@ package offthecob.mpd.banks
 
 import com.bitwig.extension.controller.api.CursorRemoteControlsPage
 import com.bitwig.extension.controller.api.PinnableCursorDevice
+import jakarta.inject.Inject
 import offthecob.mpd.TrackHandler
-import javax.inject.Inject
 
 class BankC
     @Inject

@@ -53,7 +53,7 @@ private fun markTrackInterested(track: Track) {
 }
 
 private fun markClips(clipBank: ClipLauncherSlotBank) {
-    clipBank.setIndication(true)
+    //clipBank.setIndication(true)
     var i = 0
     while (i < clipBank.sizeOfBank) {
         val clip = clipBank.getItemAt(i)

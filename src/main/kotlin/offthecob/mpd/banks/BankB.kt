@@ -2,10 +2,10 @@ package offthecob.mpd.banks
 
 import com.bitwig.extension.controller.api.ClipLauncherSlot
 import com.bitwig.extension.controller.api.Track
+import jakarta.inject.Inject
 import offthecob.mpd.Mode
 import offthecob.mpd.Preview
 import offthecob.mpd.TrackHandler
-import javax.inject.Inject
 
 class BankB
     @Inject

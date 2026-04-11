@@ -8,8 +8,9 @@ import com.bitwig.extension.controller.api.CursorTrack
 import com.bitwig.extension.controller.api.PinnableCursorDevice
 import com.bitwig.extension.controller.api.Track
 import com.bitwig.extension.controller.api.TrackBank
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
+
 
 @Singleton
 class TrackHandler
