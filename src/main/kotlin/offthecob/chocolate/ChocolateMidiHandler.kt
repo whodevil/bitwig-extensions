@@ -17,7 +17,7 @@ enum class FootswitchMode {
     CLIP,
 }
 
-enum class EncoderMode() {
+enum class EncoderMode {
     VOLUME,
     SEND
 }
@@ -40,7 +40,7 @@ class ChocolateMidiHandler(
     private val clipLauncherSlotBank: ClipLauncherSlotBank
 ) : MidiHandler {
 
-    var footswitchMode: FootswitchMode = FootswitchMode.CLIP
+    var footswitchMode: FootswitchMode = CLIP
     var encoderMode: EncoderMode = VOLUME
     var keypadMode: KeypadMode = KeypadMode.DEFAULT
     var deviceState: DeviceState = DeviceState.NAVIGATION
@@ -122,16 +122,16 @@ class ChocolateMidiHandler(
     private fun b() {
         host.println("b")
         when(footswitchMode) {
-             CLIP -> triggerNextScene()
-             SCENE -> scrollSceneForward()
+           CLIP -> triggerNextScene()
+           SCENE -> scrollSceneForward()
         }
     }
 
     private fun a() {
         host.println("a")
         when(footswitchMode) {
-             CLIP -> triggerPreviousScene()
-             SCENE -> scrollSceneBack()
+           CLIP -> triggerPreviousScene()
+           SCENE -> scrollSceneBack()
         }
     }
 
