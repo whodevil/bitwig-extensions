@@ -76,15 +76,51 @@ class ChocolateMidiHandler(
             17 -> trackMute()
             18 -> deactivate()
 
-            10 -> insertDevice()
+            4 -> when (keypadMode) {
+                KeypadMode.DEFAULT -> scrollClipBack()
+                KeypadMode.DEVICE -> when (deviceState) {
+                    DeviceState.NAVIGATION -> moveInsertionCursorBack()
+                    DeviceState.BROWSING -> {} // no-op
+                }
+            }
+            5 -> when (keypadMode) {
+                KeypadMode.DEFAULT -> scrollClipDown()
+                KeypadMode.DEVICE -> when (deviceState) {
+                    DeviceState.NAVIGATION -> scrollClipDown()
+                    DeviceState.BROWSING -> scrollBrowserDown()
+                }
+            }
+            6 -> when (keypadMode) {
+                KeypadMode.DEFAULT -> scrollClipForward()
+                KeypadMode.DEVICE -> when (deviceState) {
+                    DeviceState.NAVIGATION -> moveInsertionCursorForward()
+                    DeviceState.BROWSING -> {} // no-op
+                }
+            }
             8 -> startHardStop()
             7 -> recordCLip()
             21 -> deleteClip()
-
-            9 -> scrollClipUp()
-            6 -> scrollClipForward()
-            5 -> scrollClipDown()
-            4 -> scrollClipBack()
+            9 -> when (keypadMode) {
+                KeypadMode.DEFAULT -> scrollClipUp()
+                KeypadMode.DEVICE -> when (deviceState) {
+                    DeviceState.NAVIGATION -> scrollClipUp()
+                    DeviceState.BROWSING -> scrollBrowserUp()
+                }
+            }
+            10 -> when (keypadMode) {
+                KeypadMode.DEFAULT -> {} // no-op
+                KeypadMode.DEVICE -> when (deviceState) {
+                    DeviceState.NAVIGATION -> openDeviceBrowser()
+                    DeviceState.BROWSING -> commitBrowser()
+                }
+            }
+            14 -> when (keypadMode) {
+                KeypadMode.DEFAULT -> {} // no-op
+                KeypadMode.DEVICE -> when (deviceState) {
+                    DeviceState.NAVIGATION -> {} // no-op
+                    DeviceState.BROWSING -> cancelBrowser()
+                }
+            }
 
             // foo
             3 -> d()
@@ -234,11 +270,6 @@ class ChocolateMidiHandler(
     private fun deleteClip() {
         host.println("delete clip")
         clipLauncherSlotBank.getItemAt(0).deleteObject()
-    }
-
-    private fun insertDevice() {
-        host.println("insert device")
-        trackBank.getItemAt(0).endOfDeviceChainInsertionPoint().browse()
     }
 
     private fun volumeDown() {
