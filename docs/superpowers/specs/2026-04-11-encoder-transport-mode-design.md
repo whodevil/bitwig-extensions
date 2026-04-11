@@ -16,8 +16,8 @@ Add a third encoder mode (`TRANSPORT`) to the Chocolate module's existing `Encod
 
 | Value | Encoder CW (PC 40) | Encoder CCW (PC 30) |
 |---|---|---|
-| `VOLUME` (default) | `trackBank.getItemAt(0).volume().inc(0.03)` | `trackBank.getItemAt(0).volume().inc(-0.03)` |
-| `SEND` | `trackBank.getItemAt(0).sendBank().getItemAt(0).inc(0.03)` | `trackBank.getItemAt(0).sendBank().getItemAt(0).inc(-0.03)` |
+| `VOLUME` (default) | `volumeUp()` | `volumeDown()` |
+| `SEND` | `trackBank.getItemAt(0).sendBank().getItemAt(0).inc(.03)` | `trackBank.getItemAt(0).sendBank().getItemAt(0).inc(-.03)` |
 | `TRANSPORT` | `transport.playStartPosition().inc(1.0)` | `transport.playStartPosition().inc(-1.0)` |
 
 The `inc` value of `1.0` on a `SettableBeatTimeValue` represents 1 beat. This is a fixed step size regardless of time signature.
@@ -91,3 +91,14 @@ All changes within the chocolate module. No changes to common, MPD, or other mod
 ### `ChocolateDefinition.kt`
 
 - Add `transport.playStartPosition().markInterested()` in the `ControllerHost.transport()` extension function
+
+## Verification
+
+Manual testing in Bitwig Studio:
+
+1. Toggle through all 3 encoder modes via PC 25 and verify popups: "Send Mode", "Transport Mode", "Volume Mode"
+2. In TRANSPORT mode, turn encoder CW and verify the play start position marker advances by 1 beat
+3. In TRANSPORT mode, turn encoder CCW and verify the marker moves back by 1 beat
+4. Turn encoder CCW at beat 0 and verify it clamps (no crash, no negative position)
+5. Nudge position during playback and verify it updates the marker without disrupting playback
+6. Verify VOLUME and SEND modes still work identically to before
