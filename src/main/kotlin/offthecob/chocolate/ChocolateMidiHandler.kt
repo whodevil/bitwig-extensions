@@ -140,18 +140,18 @@ class ChocolateMidiHandler(
     }
 
     private fun encoderCounterClockwise() {
-        if(encoderMode == VOLUME) {
-            volumeDown()
-        } else {
-            trackBank.getItemAt(0).sendBank().getItemAt(0).inc(-.03)
+        when (encoderMode) {
+            EncoderMode.VOLUME -> volumeDown()
+            EncoderMode.SEND -> trackBank.getItemAt(0).sendBank().getItemAt(0).inc(-.03)
+            EncoderMode.TRANSPORT -> transport.playStartPosition().inc(-1.0)
         }
     }
 
     private fun encoderClockwise() {
-        if(encoderMode == VOLUME) {
-            volumeUp()
-        } else {
-            trackBank.getItemAt(0).sendBank().getItemAt(0).inc(.03)
+        when (encoderMode) {
+            EncoderMode.VOLUME -> volumeUp()
+            EncoderMode.SEND -> trackBank.getItemAt(0).sendBank().getItemAt(0).inc(.03)
+            EncoderMode.TRANSPORT -> transport.playStartPosition().inc(1.0)
         }
     }
 
