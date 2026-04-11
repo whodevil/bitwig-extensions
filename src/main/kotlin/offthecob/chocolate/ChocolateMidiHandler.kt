@@ -63,6 +63,7 @@ class ChocolateMidiHandler(
         host.println("pc: ${msg.isProgramChange}, $msg")
         when (msg.data1) {
             11 -> toggleFootswitchMode()
+            12 -> toggleKeypadMode()
             25 -> toggleEncoderMode()
 
             40 -> encoderClockwise()
@@ -166,6 +167,22 @@ class ChocolateMidiHandler(
         } else {
             host.showPopupNotification("Clip Mode")
             footswitchMode = CLIP
+        }
+    }
+
+    private fun toggleKeypadMode() {
+        if (keypadMode == KeypadMode.DEFAULT) {
+            host.showPopupNotification("Device Mode")
+            application.setPanelLayout("EDIT")
+            keypadMode = KeypadMode.DEVICE
+            deviceState = DeviceState.NAVIGATION
+        } else {
+            if (deviceState == DeviceState.BROWSING) {
+                popupBrowser.cancel()
+            }
+            host.showPopupNotification("Default Mode")
+            keypadMode = KeypadMode.DEFAULT
+            deviceState = DeviceState.NAVIGATION
         }
     }
 
