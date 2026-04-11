@@ -11,7 +11,6 @@ import com.bitwig.extension.controller.api.TrackBank
 import com.bitwig.extension.controller.api.Transport
 import offthecob.chocolate.FootswitchMode.CLIP
 import offthecob.chocolate.FootswitchMode.SCENE
-import offthecob.chocolate.EncoderMode.VOLUME
 import offthecob.common.MidiHandler
 import offthecob.common.NoteData
 
@@ -22,7 +21,8 @@ enum class FootswitchMode {
 
 enum class EncoderMode {
     VOLUME,
-    SEND
+    SEND,
+    TRANSPORT
 }
 
 enum class KeypadMode {
@@ -47,7 +47,7 @@ class ChocolateMidiHandler(
 ) : MidiHandler {
 
     private var footswitchMode: FootswitchMode = CLIP
-    private var encoderMode: EncoderMode = VOLUME
+    private var encoderMode: EncoderMode = EncoderMode.VOLUME
     private var keypadMode: KeypadMode = KeypadMode.DEFAULT
     private var deviceState: DeviceState = DeviceState.NAVIGATION
 
@@ -139,18 +139,18 @@ class ChocolateMidiHandler(
     }
 
     private fun encoderCounterClockwise() {
-        if(encoderMode == VOLUME) {
-            volumeDown()
-        } else {
-            trackBank.getItemAt(0).sendBank().getItemAt(0).inc(-.03)
+        when (encoderMode) {
+            EncoderMode.VOLUME -> volumeDown()
+            EncoderMode.SEND -> trackBank.getItemAt(0).sendBank().getItemAt(0).inc(-.03)
+            EncoderMode.TRANSPORT -> transport.playStartPosition().inc(-1.0)
         }
     }
 
     private fun encoderClockwise() {
-        if(encoderMode == VOLUME) {
-            volumeUp()
-        } else {
-            trackBank.getItemAt(0).sendBank().getItemAt(0).inc(.03)
+        when (encoderMode) {
+            EncoderMode.VOLUME -> volumeUp()
+            EncoderMode.SEND -> trackBank.getItemAt(0).sendBank().getItemAt(0).inc(.03)
+            EncoderMode.TRANSPORT -> transport.playStartPosition().inc(1.0)
         }
     }
 
@@ -258,12 +258,19 @@ class ChocolateMidiHandler(
     }
 
     private fun toggleEncoderMode() {
-        if(encoderMode == VOLUME) {
-            host.showPopupNotification("Send Mode")
-            encoderMode = EncoderMode.SEND
-        } else {
-            host.showPopupNotification("Volume Mode")
-            encoderMode = VOLUME
+        when (encoderMode) {
+            EncoderMode.VOLUME -> {
+                host.showPopupNotification("Send Mode")
+                encoderMode = EncoderMode.SEND
+            }
+            EncoderMode.SEND -> {
+                host.showPopupNotification("Transport Mode")
+                encoderMode = EncoderMode.TRANSPORT
+            }
+            EncoderMode.TRANSPORT -> {
+                host.showPopupNotification("Volume Mode")
+                encoderMode = EncoderMode.VOLUME
+            }
         }
     }
 
