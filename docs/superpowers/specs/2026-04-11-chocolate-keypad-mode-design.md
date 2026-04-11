@@ -33,7 +33,7 @@ Within `KeypadMode.DEVICE`, a sub-state tracks whether the device browser popup 
 ### Keypad Mode Toggle (PC 12)
 
 - `DEFAULT` -> `DEVICE`: Show popup "Device Mode", open device panel via `Application.setPanelLayout("EDIT")`, set `DeviceState = NAVIGATION`.
-- `DEVICE` -> `DEFAULT`: Show popup "Default Mode". If `DeviceState == BROWSING`, cancel the browser first. Leave panel as-is.
+- `DEVICE` -> `DEFAULT`: Show popup "Default Mode". If `DeviceState == BROWSING`, cancel the browser first. Panel layout is not restored on exit — the user may have changed it manually while in device mode.
 
 ### Device State Transitions
 
@@ -61,6 +61,10 @@ BROWSING --[PC 14 (cancel)]--> NAVIGATION
 | 10 (browse) | No-op | Open browser at cursor's insertion point | Commit selection |
 | 14 | No-op (unassigned) | No-op | Cancel browser |
 
+**Note — PC 10 behavior change:** PC 10 currently opens the device browser unconditionally. In the new design, it becomes a no-op in DEFAULT mode and is only active in DEVICE mode. This is intentional: device browsing is now scoped exclusively to device mode.
+
+**Note — Track navigation in device mode:** Up/down (PC 9/5) remain as track navigation in DEVICE/NAVIGATION. This is intentional — it allows switching tracks to view different device chains without leaving device mode.
+
 ### Mode-independent keys (unchanged across all keypad modes)
 
 - Row 0: Arm (PC 15), Solo (PC 16), Mute (PC 17), Activate (PC 18)
@@ -77,15 +81,29 @@ BROWSING --[PC 14 (cancel)]--> NAVIGATION
 | Object | Creation | Purpose |
 |---|---|---|
 | `Application` | `host.createApplication()` | `setPanelLayout("EDIT")` when entering device mode |
-| `CursorDevice` | `cursorTrack.createCursorDevice("chocolate-device", "Cursor Device", 0, CursorDeviceFollowMode.FOLLOW_SELECTION)` | Tracks the selected device in the chain; `selectNext()`/`selectPrevious()` moves between devices; `afterDeviceInsertionPoint().browse()` opens browser at cursor position |
+| `PinnableCursorDevice` | `cursorTrack.createCursorDevice("chocolate-device", "Cursor Device", 0, CursorDeviceFollowMode.FOLLOW_SELECTION)` | Tracks the selected device in the chain; `selectNext()`/`selectPrevious()` moves between devices; `afterDeviceInsertionPoint().browse()` opens browser at cursor position. The return type is `PinnableCursorDevice` (extends `CursorDevice`); pinning is not used but the type is what the API returns. |
 | `PopupBrowser` | `host.createPopupBrowser()` | `selectNextFile()`/`selectPreviousFile()` to scroll results, `commit()` to accept, `cancel()` to dismiss |
 
-### markInterested() Calls
+### markInterested() and Observer Registration
 
-- `cursorDevice.name()` -- know which device the cursor is on
-- `cursorDevice.hasNext()` -- boundary detection
-- `cursorDevice.hasPrevious()` -- boundary detection
-- `popupBrowser.exists()` -- detect external browser close for state consistency
+All value objects below require `.markInterested()` at init time:
+
+- `cursorDevice.name().markInterested()` -- know which device the cursor is on
+- `cursorDevice.hasNext().markInterested()` -- boundary detection
+- `cursorDevice.hasPrevious().markInterested()` -- boundary detection
+- `popupBrowser.exists().markInterested()` -- detect external browser close
+
+Additionally, `popupBrowser.exists()` requires a value observer for state recovery (see Error Handling). Register during init:
+
+```kotlin
+popupBrowser.exists().addValueObserver { exists ->
+    if (!exists && deviceState == DeviceState.BROWSING) {
+        deviceState = DeviceState.NAVIGATION
+    }
+}
+```
+
+This observer handles the case where the user closes the browser via Bitwig's GUI rather than the keypad. Registration should happen in the `ChocolateMidiHandler` init block or constructor.
 
 ### Insertion Point Strategy
 
@@ -93,9 +111,11 @@ When PC 10 is pressed in DEVICE/NAVIGATION:
 - If the cursor device exists (non-empty chain): `cursorDevice.afterDeviceInsertionPoint().browse()`
 - If the chain is empty: `trackBank.getItemAt(0).endOfDeviceChainInsertionPoint().browse()`
 
-### CursorTrack
+### CursorTrack Refactoring
 
-The module already creates a cursor track that the trackBank follows. The `CursorDevice` is created from this same cursor track.
+The module already creates a cursor track inside the `TrackBank.init()` extension function, but it is currently a local variable scoped to that function. The `CursorDevice` must be created from this cursor track, so `TrackBank.init()` needs to be refactored: extract the `host.createCursorTrack()` call into `fetchHandler()` so the cursor track is accessible for both `trackBank.followCursorTrack()` and `cursorTrack.createCursorDevice()`. Pass the cursor track into the modified `init()` function as a parameter.
+
+**Note on Bitwig API Javadoc:** The `Application` interface has swapped Javadoc comments on `PANEL_LAYOUT_MIX` and `PANEL_LAYOUT_EDIT`. Despite this, `"EDIT"` is the correct string value for the detail/device panel.
 
 ## Error Handling & Edge Cases
 
@@ -115,9 +135,12 @@ All changes within the chocolate module. No changes to common or MPD modules.
 
 ### `ChocolateDefinition.kt`
 
-- Create `Application`, `CursorDevice`, and `PopupBrowser` in `fetchHandler()`
-- Add `markInterested()` calls for the new API objects
-- Pass these three new objects into `ChocolateMidiHandler`
+- Refactor `TrackBank.init()`: extract `host.createCursorTrack()` into `fetchHandler()` so the cursor track is accessible; pass it as a parameter to a modified `init()` function
+- Create `Application` via `host.createApplication()`
+- Create `PinnableCursorDevice` via `cursorTrack.createCursorDevice(...)` 
+- Create `PopupBrowser` via `host.createPopupBrowser()`
+- Add `markInterested()` calls and observer registration for the new API objects
+- Pass `application`, `cursorDevice`, and `popupBrowser` into `ChocolateMidiHandler`
 
 ### `ChocolateMidiHandler.kt`
 
