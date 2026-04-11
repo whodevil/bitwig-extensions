@@ -11,7 +11,6 @@ import com.bitwig.extension.controller.api.TrackBank
 import com.bitwig.extension.controller.api.Transport
 import offthecob.chocolate.FootswitchMode.CLIP
 import offthecob.chocolate.FootswitchMode.SCENE
-import offthecob.chocolate.EncoderMode.VOLUME
 import offthecob.common.MidiHandler
 import offthecob.common.NoteData
 
@@ -48,7 +47,7 @@ class ChocolateMidiHandler(
 ) : MidiHandler {
 
     private var footswitchMode: FootswitchMode = CLIP
-    private var encoderMode: EncoderMode = VOLUME
+    private var encoderMode: EncoderMode = EncoderMode.VOLUME
     private var keypadMode: KeypadMode = KeypadMode.DEFAULT
     private var deviceState: DeviceState = DeviceState.NAVIGATION
 
