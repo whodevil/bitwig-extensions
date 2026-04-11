@@ -89,6 +89,7 @@ fun TrackBank.init(cursorTrack: CursorTrack): ClipLauncherSlotBank {
 fun ControllerHost.transport(): Transport {
     val transport = createTransport()
     transport.isPlaying.markInterested()
+    transport.playStartPosition().markInterested()
     return transport
 }
 
