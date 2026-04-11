@@ -22,7 +22,8 @@ enum class FootswitchMode {
 
 enum class EncoderMode {
     VOLUME,
-    SEND
+    SEND,
+    TRANSPORT
 }
 
 enum class KeypadMode {
