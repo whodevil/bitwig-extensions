@@ -22,6 +22,16 @@ enum class EncoderMode() {
     SEND
 }
 
+enum class KeypadMode {
+    DEFAULT,
+    DEVICE,
+}
+
+enum class DeviceState {
+    NAVIGATION,
+    BROWSING,
+}
+
 class ChocolateMidiHandler(
     private val host: ControllerHost,
     private val transport: Transport,
@@ -32,6 +42,8 @@ class ChocolateMidiHandler(
 
     var footswitchMode: FootswitchMode = FootswitchMode.CLIP
     var encoderMode: EncoderMode = VOLUME
+    var keypadMode: KeypadMode = KeypadMode.DEFAULT
+    var deviceState: DeviceState = DeviceState.NAVIGATION
 
     override fun handleMessage(msg: ShortMidiMessage) {
         host.println("pc: ${msg.isProgramChange}, $msg")
