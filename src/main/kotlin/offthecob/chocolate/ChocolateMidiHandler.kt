@@ -1,8 +1,11 @@
 package offthecob.chocolate
 
 import com.bitwig.extension.api.util.midi.ShortMidiMessage
+import com.bitwig.extension.controller.api.Application
 import com.bitwig.extension.controller.api.ClipLauncherSlotBank
 import com.bitwig.extension.controller.api.ControllerHost
+import com.bitwig.extension.controller.api.PinnableCursorDevice
+import com.bitwig.extension.controller.api.PopupBrowser
 import com.bitwig.extension.controller.api.SceneBank
 import com.bitwig.extension.controller.api.TrackBank
 import com.bitwig.extension.controller.api.Transport
@@ -37,13 +40,24 @@ class ChocolateMidiHandler(
     private val transport: Transport,
     private val sceneBank: SceneBank,
     private val trackBank: TrackBank,
-    private val clipLauncherSlotBank: ClipLauncherSlotBank
+    private val clipLauncherSlotBank: ClipLauncherSlotBank,
+    private val application: Application,
+    private val cursorDevice: PinnableCursorDevice,
+    private val popupBrowser: PopupBrowser
 ) : MidiHandler {
 
     var footswitchMode: FootswitchMode = CLIP
     var encoderMode: EncoderMode = VOLUME
     var keypadMode: KeypadMode = KeypadMode.DEFAULT
     var deviceState: DeviceState = DeviceState.NAVIGATION
+
+    init {
+        popupBrowser.exists().addValueObserver { exists ->
+            if (!exists && deviceState == DeviceState.BROWSING) {
+                deviceState = DeviceState.NAVIGATION
+            }
+        }
+    }
 
     override fun handleMessage(msg: ShortMidiMessage) {
         host.println("pc: ${msg.isProgramChange}, $msg")

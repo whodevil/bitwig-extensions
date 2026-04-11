@@ -24,12 +24,30 @@ class ChocolateDefinition : CommonExtensionDefinition(
                 val cursorTrack = host.createCursorTrack("chocolate", "Cursor Track", 0, 1, true)
                 val trackBank = host.createTrackBank(1, 1, 1)
                 val clipLauncherSlotBank = trackBank.init(cursorTrack)
+
+                val application = host.createApplication()
+
+                val cursorDevice = cursorTrack.createCursorDevice(
+                    "chocolate-device", "Cursor Device", 0,
+                    CursorDeviceFollowMode.FOLLOW_SELECTION
+                )
+                cursorDevice.exists().markInterested()
+                cursorDevice.name().markInterested()
+                cursorDevice.hasNext().markInterested()
+                cursorDevice.hasPrevious().markInterested()
+
+                val popupBrowser = host.createPopupBrowser()
+                popupBrowser.exists().markInterested()
+
                 return ChocolateMidiHandler(
                     host,
                     transport,
                     sceneBank,
                     trackBank,
-                    clipLauncherSlotBank
+                    clipLauncherSlotBank,
+                    application,
+                    cursorDevice,
+                    popupBrowser
                 )
             }
         }
