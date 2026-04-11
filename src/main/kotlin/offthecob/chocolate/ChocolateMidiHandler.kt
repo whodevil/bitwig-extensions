@@ -6,13 +6,13 @@ import com.bitwig.extension.controller.api.ControllerHost
 import com.bitwig.extension.controller.api.SceneBank
 import com.bitwig.extension.controller.api.TrackBank
 import com.bitwig.extension.controller.api.Transport
-import offthecob.chocolate.ChocolateMode.CLIP
-import offthecob.chocolate.ChocolateMode.SCENE
+import offthecob.chocolate.FootswitchMode.CLIP
+import offthecob.chocolate.FootswitchMode.SCENE
 import offthecob.chocolate.EncoderMode.VOLUME
 import offthecob.common.MidiHandler
 import offthecob.common.NoteData
 
-enum class ChocolateMode() {
+enum class FootswitchMode {
     SCENE,
     CLIP,
 }
@@ -30,13 +30,13 @@ class ChocolateMidiHandler(
     private val clipLauncherSlotBank: ClipLauncherSlotBank
 ) : MidiHandler {
 
-    var mode: ChocolateMode = CLIP
+    var footswitchMode: FootswitchMode = FootswitchMode.CLIP
     var encoderMode: EncoderMode = VOLUME
 
     override fun handleMessage(msg: ShortMidiMessage) {
         host.println("pc: ${msg.isProgramChange}, $msg")
         when (msg.data1) {
-            11 -> toggleMode()
+            11 -> toggleFootswitchMode()
             25 -> toggleEncoderMode()
 
             40 -> encoderClockwise()
@@ -93,7 +93,7 @@ class ChocolateMidiHandler(
 
     private fun d() {
         host.println("d")
-        when(mode) {
+        when(footswitchMode) {
            CLIP -> startStop()
            SCENE -> startHardStop()
         }
@@ -101,7 +101,7 @@ class ChocolateMidiHandler(
 
     private fun c() {
         host.println("c")
-        when(mode) {
+        when(footswitchMode) {
            CLIP -> recordCLip()
            SCENE -> playScene()
         }
@@ -109,17 +109,17 @@ class ChocolateMidiHandler(
 
     private fun b() {
         host.println("b")
-        when(mode) {
-            CLIP -> triggerNextScene()
-            SCENE -> scrollSceneForward()
+        when(footswitchMode) {
+             CLIP -> triggerNextScene()
+             SCENE -> scrollSceneForward()
         }
     }
 
     private fun a() {
         host.println("a")
-        when(mode) {
-            CLIP -> triggerPreviousScene()
-            SCENE -> scrollSceneBack()
+        when(footswitchMode) {
+             CLIP -> triggerPreviousScene()
+             SCENE -> scrollSceneBack()
         }
     }
 
@@ -133,13 +133,13 @@ class ChocolateMidiHandler(
         playScene()
     }
 
-    private fun toggleMode() {
-        if(mode == CLIP) {
+    private fun toggleFootswitchMode() {
+        if(footswitchMode == CLIP) {
             host.showPopupNotification("Scene Mode")
-            mode = SCENE
+            footswitchMode = SCENE
         } else {
             host.showPopupNotification("Clip Mode")
-            mode = CLIP
+            footswitchMode = CLIP
         }
     }
 
