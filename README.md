@@ -22,7 +22,7 @@ to the `data1` byte, so no offset translation is needed.
   ╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
     ┌──────┐                                           ┌──────┐
-    │      │ ← OS volume (no MIDI)       MIDI ────►   │      │ CW  = vol/send −3%
+    │      │ ← OS volume (no MIDI)       MIDI ────►    │      │ CW  = vol/send −3%
     │ ENC0 │                                           │ ENC1 │ CCW = vol/send +3%
     └──────┘                                           └──────┘
 
