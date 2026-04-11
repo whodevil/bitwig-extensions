@@ -1,4 +1,4 @@
-Bitwig MPD 24 script extension
+Bitwig Extensions
 =============================
 
 Early days. I want to integrate my workflow closer with the mpd,
