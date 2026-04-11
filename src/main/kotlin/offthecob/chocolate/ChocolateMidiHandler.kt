@@ -160,6 +160,41 @@ class ChocolateMidiHandler(
         playScene()
     }
 
+    private fun moveInsertionCursorForward() {
+        cursorDevice.selectNext()
+    }
+
+    private fun moveInsertionCursorBack() {
+        cursorDevice.selectPrevious()
+    }
+
+    private fun openDeviceBrowser() {
+        if (cursorDevice.exists().get()) {
+            cursorDevice.afterDeviceInsertionPoint().browse()
+        } else {
+            trackBank.getItemAt(0).endOfDeviceChainInsertionPoint().browse()
+        }
+        deviceState = DeviceState.BROWSING
+    }
+
+    private fun commitBrowser() {
+        popupBrowser.commit()
+        deviceState = DeviceState.NAVIGATION
+    }
+
+    private fun cancelBrowser() {
+        popupBrowser.cancel()
+        deviceState = DeviceState.NAVIGATION
+    }
+
+    private fun scrollBrowserUp() {
+        popupBrowser.selectPreviousFile()
+    }
+
+    private fun scrollBrowserDown() {
+        popupBrowser.selectNextFile()
+    }
+
     private fun toggleFootswitchMode() {
         if(footswitchMode == CLIP) {
             host.showPopupNotification("Scene Mode")
