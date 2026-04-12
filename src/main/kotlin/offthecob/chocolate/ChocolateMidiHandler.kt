@@ -11,6 +11,9 @@ import com.bitwig.extension.controller.api.TrackBank
 import com.bitwig.extension.controller.api.Transport
 import offthecob.chocolate.FootswitchMode.CLIP
 import offthecob.chocolate.FootswitchMode.SCENE
+import offthecob.chocolate.EncoderMode.*
+import offthecob.chocolate.KeypadMode.*
+import offthecob.chocolate.DeviceState.*
 import offthecob.common.MidiHandler
 import offthecob.common.NoteData
 
@@ -47,14 +50,14 @@ class ChocolateMidiHandler(
 ) : MidiHandler {
 
     private var footswitchMode: FootswitchMode = CLIP
-    private var encoderMode: EncoderMode = EncoderMode.VOLUME
-    private var keypadMode: KeypadMode = KeypadMode.DEFAULT
-    private var deviceState: DeviceState = DeviceState.NAVIGATION
+    private var encoderMode: EncoderMode = VOLUME
+    private var keypadMode: KeypadMode = DEFAULT
+    private var deviceState: DeviceState = NAVIGATION
 
     init {
         popupBrowser.exists().addValueObserver { exists ->
-            if (!exists && deviceState == DeviceState.BROWSING) {
-                deviceState = DeviceState.NAVIGATION
+            if (!exists && deviceState == BROWSING) {
+                deviceState = NAVIGATION
             }
         }
     }
@@ -80,53 +83,59 @@ class ChocolateMidiHandler(
             7 -> recordCLip()
             21 -> deleteClip()
 
-            4 -> when (keypadMode) {
-                KeypadMode.DEFAULT -> scrollClipBack()
-                KeypadMode.DEVICE -> when (deviceState) {
-                    DeviceState.NAVIGATION -> moveInsertionCursorBack()
-                    DeviceState.BROWSING -> {} // no-op
-                }
-            }
-            5 -> when (keypadMode) {
-                KeypadMode.DEFAULT -> scrollClipDown()
-                KeypadMode.DEVICE -> when (deviceState) {
-                    DeviceState.NAVIGATION -> scrollClipDown()
-                    DeviceState.BROWSING -> scrollBrowserDown()
-                }
-            }
-            6 -> when (keypadMode) {
-                KeypadMode.DEFAULT -> scrollClipForward()
-                KeypadMode.DEVICE -> when (deviceState) {
-                    DeviceState.NAVIGATION -> moveInsertionCursorForward()
-                    DeviceState.BROWSING -> {} // no-op
-                }
-            }
-            9 -> when (keypadMode) {
-                KeypadMode.DEFAULT -> scrollClipUp()
-                KeypadMode.DEVICE -> when (deviceState) {
-                    DeviceState.NAVIGATION -> scrollClipUp()
-                    DeviceState.BROWSING -> scrollBrowserUp()
-                }
-            }
-            10 -> when (keypadMode) {
-                KeypadMode.DEFAULT -> {} // no-op
-                KeypadMode.DEVICE -> when (deviceState) {
-                    DeviceState.NAVIGATION -> openDeviceBrowser()
-                    DeviceState.BROWSING -> commitBrowser()
-                }
-            }
-            14 -> when (keypadMode) {
-                KeypadMode.DEFAULT -> {} // no-op
-                KeypadMode.DEVICE -> when (deviceState) {
-                    DeviceState.NAVIGATION -> {} // no-op
-                    DeviceState.BROWSING -> cancelBrowser()
-                }
-            }
+            4 -> modeHandler(
+                ::scrollClipBack,
+                ::moveInsertionCursorBack
+            ) {}
+
+            5 -> modeHandler(
+                ::scrollClipDown,
+                ::scrollClipDown,
+                ::scrollBrowserDown
+            )
+
+            6 -> modeHandler(
+                ::scrollClipForward,
+                ::moveInsertionCursorForward,
+                ::moveInsertionCursorForward
+            )
+
+            9 -> modeHandler(
+                ::scrollClipUp,
+                ::scrollClipUp,
+                ::scrollBrowserUp
+            )
+
+            10 -> modeHandler(
+                {},
+                ::openDeviceBrowser,
+                ::commitBrowser
+            )
+
+            14 -> modeHandler(
+                {},
+                {},
+                ::cancelBrowser
+            )
 
             3 -> d()
             2 -> c()
             1 -> b()
             0 -> a()
+        }
+    }
+
+    private fun modeHandler(
+        defaultModeFunction: () -> Unit,
+        navigationModeFunction: () -> Unit,
+        browsingModeFunction: () -> Unit
+    ) {
+        when (keypadMode) {
+            DEFAULT -> defaultModeFunction()
+            DEVICE -> when (deviceState) {
+                NAVIGATION -> navigationModeFunction()
+                BROWSING -> browsingModeFunction()
+            }
         }
     }
 
@@ -140,49 +149,49 @@ class ChocolateMidiHandler(
 
     private fun encoderCounterClockwise() {
         when (encoderMode) {
-            EncoderMode.VOLUME -> volumeDown()
-            EncoderMode.SEND -> trackBank.getItemAt(0).sendBank().getItemAt(0).inc(-.03)
-            EncoderMode.TRANSPORT -> transport.playStartPosition().inc(-1.0)
+            VOLUME -> volumeDown()
+            SEND -> trackBank.getItemAt(0).sendBank().getItemAt(0).inc(-.03)
+            TRANSPORT -> transport.playStartPosition().inc(-1.0)
         }
     }
 
     private fun encoderClockwise() {
         when (encoderMode) {
-            EncoderMode.VOLUME -> volumeUp()
-            EncoderMode.SEND -> trackBank.getItemAt(0).sendBank().getItemAt(0).inc(.03)
-            EncoderMode.TRANSPORT -> transport.playStartPosition().inc(1.0)
+            VOLUME -> volumeUp()
+            SEND -> trackBank.getItemAt(0).sendBank().getItemAt(0).inc(.03)
+            TRANSPORT -> transport.playStartPosition().inc(1.0)
         }
     }
 
     private fun d() {
         host.println("d")
-        when(footswitchMode) {
-           CLIP -> startStop()
-           SCENE -> startHardStop()
+        when (footswitchMode) {
+            CLIP -> startStop()
+            SCENE -> startHardStop()
         }
     }
 
     private fun c() {
         host.println("c")
-        when(footswitchMode) {
-           CLIP -> recordCLip()
-           SCENE -> playScene()
+        when (footswitchMode) {
+            CLIP -> recordCLip()
+            SCENE -> playScene()
         }
     }
 
     private fun b() {
         host.println("b")
-        when(footswitchMode) {
-           CLIP -> triggerNextScene()
-           SCENE -> scrollSceneForward()
+        when (footswitchMode) {
+            CLIP -> triggerNextScene()
+            SCENE -> scrollSceneForward()
         }
     }
 
     private fun a() {
         host.println("a")
-        when(footswitchMode) {
-           CLIP -> triggerPreviousScene()
-           SCENE -> scrollSceneBack()
+        when (footswitchMode) {
+            CLIP -> triggerPreviousScene()
+            SCENE -> scrollSceneBack()
         }
     }
 
@@ -210,17 +219,17 @@ class ChocolateMidiHandler(
         } else {
             trackBank.getItemAt(0).endOfDeviceChainInsertionPoint().browse()
         }
-        deviceState = DeviceState.BROWSING
+        deviceState = BROWSING
     }
 
     private fun commitBrowser() {
         popupBrowser.commit()
-        deviceState = DeviceState.NAVIGATION
+        deviceState = NAVIGATION
     }
 
     private fun cancelBrowser() {
         popupBrowser.cancel()
-        deviceState = DeviceState.NAVIGATION
+        deviceState = NAVIGATION
     }
 
     private fun scrollBrowserUp() {
@@ -232,7 +241,7 @@ class ChocolateMidiHandler(
     }
 
     private fun toggleFootswitchMode() {
-        if(footswitchMode == CLIP) {
+        if (footswitchMode == CLIP) {
             host.showPopupNotification("Scene Mode")
             footswitchMode = SCENE
         } else {
@@ -242,34 +251,36 @@ class ChocolateMidiHandler(
     }
 
     private fun toggleKeypadMode() {
-        if (keypadMode == KeypadMode.DEFAULT) {
+        if (keypadMode == DEFAULT) {
             host.showPopupNotification("Device Mode")
             application.setPanelLayout("EDIT")
-            keypadMode = KeypadMode.DEVICE
-            deviceState = DeviceState.NAVIGATION
+            keypadMode = DEVICE
+            deviceState = NAVIGATION
         } else {
-            if (deviceState == DeviceState.BROWSING) {
+            if (deviceState == BROWSING) {
                 popupBrowser.cancel()
             }
             host.showPopupNotification("Default Mode")
-            keypadMode = KeypadMode.DEFAULT
-            deviceState = DeviceState.NAVIGATION
+            keypadMode = DEFAULT
+            deviceState = NAVIGATION
         }
     }
 
     private fun toggleEncoderMode() {
         when (encoderMode) {
-            EncoderMode.VOLUME -> {
+            VOLUME -> {
                 host.showPopupNotification("Send Mode")
-                encoderMode = EncoderMode.SEND
+                encoderMode = SEND
             }
-            EncoderMode.SEND -> {
+
+            SEND -> {
                 host.showPopupNotification("Transport Mode")
-                encoderMode = EncoderMode.TRANSPORT
+                encoderMode = TRANSPORT
             }
-            EncoderMode.TRANSPORT -> {
+
+            TRANSPORT -> {
                 host.showPopupNotification("Volume Mode")
-                encoderMode = EncoderMode.VOLUME
+                encoderMode = VOLUME
             }
         }
     }
