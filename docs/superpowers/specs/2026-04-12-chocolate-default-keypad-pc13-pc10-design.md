@@ -96,7 +96,7 @@ No changes needed. The `Application` object is already created in `ChocolateDefi
 
 **Sync with manual layout changes:** If the user changes the panel layout manually in Bitwig (or via `toggleKeypadMode` entering device mode with `"EDIT"`), the `arrangeLayout` boolean may be out of sync. The next PC 10 press will set the layout based on internal state, which may not match what the user sees. This is an accepted limitation since Bitwig does not provide a readable panel layout property.
 
-**Device mode interaction:** Entering device mode (PC 12) sets the layout to `"EDIT"`. Exiting device mode does not restore the previous layout. After exiting, PC 10 resumes toggling based on `arrangeLayout`'s internal state. If the user was in Mix view before entering device mode, `arrangeLayout` still reflects that -- the first press after exiting device mode will flip to the other layout as expected from the internal state's perspective.
+**Device mode interaction:** Entering device mode (PC 12) sets the layout to `"EDIT"`. Exiting device mode does **not** auto-restore the Arrange/Mix layout; the user presses PC 10 to switch back. After exiting, PC 10 resumes toggling based on `arrangeLayout`'s internal state. If the user was in Mix view before entering device mode, `arrangeLayout` still reflects that -- the first press after exiting device mode will flip to the other layout as expected from the internal state's perspective.
 
 **Repeated presses:** Each press deterministically flips the layout. No debounce or guard needed -- `setPanelLayout` is idempotent for repeated calls with the same value, and rapid toggling is harmless.
 
