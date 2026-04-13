@@ -392,10 +392,8 @@ class ChocolateMidiHandler(
 
     private fun togglePanelLayout() {
         if (arrangeLayout) {
-            host.showPopupNotification("Mix View")
             application.setPanelLayout("MIX")
         } else {
-            host.showPopupNotification("Arrange View")
             application.setPanelLayout("ARRANGE")
         }
         arrangeLayout = !arrangeLayout
