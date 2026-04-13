@@ -53,6 +53,7 @@ class ChocolateMidiHandler(
     private var encoderMode: EncoderMode = VOLUME
     private var keypadMode: KeypadMode = DEFAULT
     private var deviceState: DeviceState = NAVIGATION
+    private var arrangeLayout: Boolean = true
 
     init {
         popupBrowser.exists().addValueObserver { exists ->
@@ -81,6 +82,7 @@ class ChocolateMidiHandler(
 
             8 -> startHardStop()
             7 -> recordCLip()
+            13 -> toggleRecord()
             21 -> deleteClip()
 
             4 -> modeHandler(
@@ -107,7 +109,7 @@ class ChocolateMidiHandler(
             )
 
             10 -> modeHandler(
-                {},
+                ::togglePanelLayout,
                 ::openDeviceBrowser,
                 ::commitBrowser
             )
@@ -253,7 +255,7 @@ class ChocolateMidiHandler(
     private fun toggleKeypadMode() {
         if (keypadMode == DEFAULT) {
             host.showPopupNotification("Device Mode")
-            application.setPanelLayout("EDIT")
+            application.toggleDevices()
             keypadMode = DEVICE
             deviceState = NAVIGATION
         } else {
@@ -381,6 +383,20 @@ class ChocolateMidiHandler(
         } else {
             transport.play()
         }
+    }
+
+    private fun toggleRecord() {
+        host.println("toggle record")
+        transport.record()
+    }
+
+    private fun togglePanelLayout() {
+        if (arrangeLayout) {
+            application.setPanelLayout("MIX")
+        } else {
+            application.setPanelLayout("ARRANGE")
+        }
+        arrangeLayout = !arrangeLayout
     }
 
     override fun handleSysexMessage(data: String) {
