@@ -255,7 +255,7 @@ class ChocolateMidiHandler(
     private fun toggleKeypadMode() {
         if (keypadMode == DEFAULT) {
             host.showPopupNotification("Device Mode")
-            application.setPanelLayout("EDIT")
+            application.toggleDevices()
             keypadMode = DEVICE
             deviceState = NAVIGATION
         } else {
