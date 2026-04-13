@@ -82,6 +82,7 @@ class ChocolateMidiHandler(
 
             8 -> startHardStop()
             7 -> recordCLip()
+            13 -> toggleRecord()
             21 -> deleteClip()
 
             4 -> modeHandler(
@@ -382,6 +383,11 @@ class ChocolateMidiHandler(
         } else {
             transport.play()
         }
+    }
+
+    private fun toggleRecord() {
+        host.println("toggle record")
+        transport.record()
     }
 
     override fun handleSysexMessage(data: String) {
