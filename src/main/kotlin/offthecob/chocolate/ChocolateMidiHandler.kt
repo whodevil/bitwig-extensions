@@ -109,7 +109,7 @@ class ChocolateMidiHandler(
             )
 
             10 -> modeHandler(
-                {},
+                ::togglePanelLayout,
                 ::openDeviceBrowser,
                 ::commitBrowser
             )
@@ -388,6 +388,17 @@ class ChocolateMidiHandler(
     private fun toggleRecord() {
         host.println("toggle record")
         transport.record()
+    }
+
+    private fun togglePanelLayout() {
+        if (arrangeLayout) {
+            host.showPopupNotification("Mix View")
+            application.setPanelLayout("MIX")
+        } else {
+            host.showPopupNotification("Arrange View")
+            application.setPanelLayout("ARRANGE")
+        }
+        arrangeLayout = !arrangeLayout
     }
 
     override fun handleSysexMessage(data: String) {
