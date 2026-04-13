@@ -53,6 +53,7 @@ class ChocolateMidiHandler(
     private var encoderMode: EncoderMode = VOLUME
     private var keypadMode: KeypadMode = DEFAULT
     private var deviceState: DeviceState = NAVIGATION
+    private var arrangeLayout: Boolean = true
 
     init {
         popupBrowser.exists().addValueObserver { exists ->
